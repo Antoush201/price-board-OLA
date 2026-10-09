@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Tarifs OLA : forfaits Solo, Duo, Trio et Quatuor pour courtiers immobiliers.">
+<title>Tarifs OLA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : logo + titre deux tons, sélecteur de forfait (4 pilules), panneau du forfait choisi (prix à gauche, inclus + AI à droite). Branding repris de ola-ai.ca, thème clair seulement comme le site. */
+:root{
+  --bg:#fafafa; --card:#f5f5f5; --fg:#0a0a0a; --fg-2:#555555;
+  --fg-60:rgba(10,10,10,.6); --fg-40:rgba(10,10,10,.4); --fg-12:rgba(10,10,10,.12); --fg-05:rgba(10,10,10,.05);
+  --border:rgba(215,215,215,.6); --border-solid:#d7d7d7; --white:#ffffff;
+  --sans:"Geist","Geist Fallback",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono","Geist Mono Fallback",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:24px;padding-block:40px 56px;display:flex;flex-direction:column;gap:32px}
+
+/* En-tête */
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.top img{height:48px;width:auto;display:block}
+.hint{font-family:var(--mono);font-size:12px;color:var(--fg-40)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px}
+.pill-tag{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--white);border-radius:999px;padding:6px 14px;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.pill-tag i{width:6px;height:6px;border-radius:50%;background:var(--fg)}
+h1{margin:0;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.025em;font-weight:600;text-wrap:balance}
+h1 span{display:block;color:var(--fg-2)}
+.no-contract{margin:-6px 0 0;font-size:17px;color:var(--fg-2)}
+
+/* Sélecteur */
+.picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:8px}
+.picker button{font:inherit;color:var(--fg);background:transparent;border:0;border-radius:14px;padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:72px;transition:background .18s,color .18s}
+.picker button:hover{background:var(--fg-05)}
+.picker button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.picker button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.picker .nm{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.picker .sub{font-size:12px;opacity:.6;display:flex;align-items:center;gap:6px}
+.dots{display:inline-flex;gap:3px}
+.dots b{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.25}
+.dots b.on{opacity:1}
+
+/* Panneau */
+.panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.card.main{background:var(--white)}
+.label{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-40)}
+.plan-name{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.plan-name h2{margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em}
+.plan-name span{font-size:14px;color:var(--fg-60)}
+.amount{font-size:clamp(56px,8vw,76px);font-weight:600;letter-spacing:-.04em;line-height:.95;font-variant-numeric:tabular-nums}
+.amount small{font-size:18px;font-weight:500;letter-spacing:0;color:var(--fg-60);margin-left:6px}
+.note{font-size:14px;color:var(--fg-60);margin-top:8px}
+.toggle{display:inline-flex;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px;gap:4px;align-self:flex-start}
+.toggle button{font:inherit;font-size:13px;font-weight:500;border:0;background:transparent;color:var(--fg-60);padding:8px 14px;border-radius:999px;cursor:pointer;min-height:36px}
+.toggle button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.toggle button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--border-solid)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.row span{font-size:14px;color:var(--fg-60)}
+.row strong{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.total span{color:var(--fg);font-weight:500}
+.row.total strong{font-size:20px;font-weight:600;letter-spacing:-.01em}
+.row span em{display:block;font-style:normal;font-size:13px;font-weight:400;color:var(--fg-60);margin-top:2px}
+.cta-wrap{display:flex;flex-direction:column;gap:12px;align-self:stretch}
+.alt{text-align:center;font-size:13px;color:var(--fg-60)}
+.alt strong{color:var(--fg);font-weight:500;user-select:all;white-space:nowrap}
+.copy{font:inherit;font-size:13px;border:0;background:none;padding:6px 2px;color:var(--fg);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.cta{display:block;text-decoration:none;font:inherit;border:0;cursor:pointer;align-self:stretch;text-align:center;background:var(--fg);color:var(--bg);border-radius:999px;padding:15px 28px;font-size:15px;font-weight:500;min-height:48px;transition:opacity .15s}
+.cta:hover{opacity:.88}
+.cta:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+
+/* Fenêtre texto */
+.modal{position:fixed;inset:0;background:rgba(10,10,10,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;backdrop-filter:blur(4px)}
+.sheet{position:relative;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:32px 28px 24px;width:100%;max-width:420px;max-height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.sheet h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.m-sub{margin:0;font-size:14px;color:var(--fg-60);max-width:34ch}
+.qr{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:14px;line-height:0}
+.qr img,.qr canvas{display:block;width:200px;height:200px}
+.msg{background:var(--card);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14px;text-align:left;align-self:stretch;color:var(--fg)}
+.m-foot{display:flex;flex-direction:column;gap:10px;align-items:center;font-size:14px;color:var(--fg-60);width:100%}
+.m-foot strong{color:var(--fg);font-weight:500;user-select:all}
+.m-link{color:var(--fg);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.close{position:absolute;top:12px;right:12px;width:40px;height:40px;border:0;background:transparent;border-radius:999px;cursor:pointer;color:var(--fg-60);display:flex;align-items:center;justify-content:center}
+.close:hover{background:var(--fg-05)}
+.close svg{width:16px;height:16px}
+
+.feat{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.feat li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.feat svg{flex:none;width:18px;height:18px;margin-top:2px}
+.ai{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.ai h3{margin:0;font-size:16px;font-weight:600}
+.ai p{margin:0;font-size:14px;color:var(--fg-60)}
+.ai .credit{display:inline-flex;align-self:flex-start;gap:8px;align-items:center;background:var(--fg);color:var(--bg);border-radius:12px;padding:6px 12px;font-size:13px;font-weight:500}
+
+footer{text-align:center;font-size:12px;color:var(--fg-40)}
+
+@media (max-width:820px){.panel{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.picker{grid-template-columns:repeat(2,minmax(0,1fr))}.hint{display:none}.wrap{padding-inline:16px;padding-block:28px 40px}.card{padding:22px}}
+@media (prefers-reduced-motion:reduce){.picker button{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img alt="OLA" src="data:image/webp;base64,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">
+  </div>
+
+  <section class="hero">
+    <span class="pill-tag"><i></i>Tarifs OLA</span>
+    <h1>Choisissez votre forfait.</h1>
+    <p class="no-contract">Sans contrat. Annulable en tout temps.</p>
+  </section>
+
+  <div class="picker" role="tablist" aria-label="Forfaits" id="picker"></div>
+
+  <section class="panel" id="panel" role="tabpanel">
+    <div class="card main">
+      <div class="plan-name"><h2 id="p-name">Solo</h2><span id="p-seats">1 courtier</span></div>
+      <div>
+        <div class="label">Abonnement mensuel</div>
+        <div class="amount" id="p-monthly">220 $<small>/ mois</small></div>
+        <div class="note" id="p-note">Ligne téléphonique et SMS inclus</div>
+      </div>
+      <div class="toggle" role="group" aria-label="Ligne téléphonique">
+        <button type="button" id="btn-incl" aria-pressed="true">Ligne incluse</button>
+        <button type="button" id="btn-usage" aria-pressed="false">Ligne à l'usage</button>
+      </div>
+      <div class="rows">
+        <div class="row total"><span>Frais de démarrage<em>Installation, onboarding et premier mois inclus</em></span><strong id="p-setup">1 999 $</strong></div>
+        <div class="row"><span>À partir du 2<sup>e</sup> mois</span><strong id="p-after">220 $ / mois</strong></div>
+      </div>
+      <div class="cta-wrap">
+        <a class="cta" id="cta" href="sms:+15814021672">Réserver mon installation</a>      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Inclus dans votre forfait</div>
+      <ul class="feat" id="feat"></ul>
+      <div class="ai">
+        <h3>Adjoint AI à l'usage</h3>
+        <p>Analyse de documents, rédaction de SMS et courriels, relances. Facturé chaque mois selon votre utilisation réelle, avec une alerte avant votre plafond.</p>
+        <span class="credit" id="ai-credit">50 $ de crédits offerts le premier mois</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>Prix en dollars canadiens, taxes en sus.</footer>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <button type="button" class="close" id="m-close" aria-label="Fermer">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+    </button>
+    <span class="pill-tag"><i></i>Forfait <span id="m-plan">Solo</span></span>
+    <h2 id="m-title">Écrivez-nous de votre cellulaire</h2>
+    <p class="m-sub">Scannez le code avec l'appareil photo de votre cellulaire. Le message est déjà écrit, il reste à appuyer sur Envoyer.</p>
+    <div class="qr" id="qr" aria-label="Code QR pour envoyer un texto à OLA"></div>
+    <div class="msg" id="m-msg"></div>
+    <div class="m-foot">
+      <span>Ou textez le <strong>581-402-1672</strong></span>
+      <a class="m-link" id="m-sms" href="sms:+15814021672">Ouvrir dans Messages</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ===== Modifie les prix ici ===== */
+const CONFIG = {
+  phoneBundle: 20,   // $ ajoutés au mensuel quand la ligne est incluse
+  aiCredit: 25,      // $ de crédits AI offerts le 1er mois
+  smsNumber: "+15814021672",
+  smsMessage: plan => `Salut! J'aimerais commencer le processus d'embarquement avec OLA (forfait ${plan}). Quelles sont les prochaines étapes?`,
+  plans: [
+    { id:"solo",    name:"Solo",    seats:1, monthly:200, setup:1999 },
+    { id:"duo",     name:"Duo",     seats:2, monthly:300, setup:3000 },
+    { id:"trio",    name:"Trio",    seats:3, monthly:400, setup:4000 },
+    { id:"quatuor", name:"Quatuor", seats:4, monthly:500, setup:5000 }
+  ],
+  features: [
+    "Portail client pour chaque transaction",
+    "Demandes d'infos Centris automatisées",
+    "Mes inscriptions",
+    "Délais des conditions et rappels",
+    "Confirmation de visites",
+    "Relances automatiques",
+    "App mobile avec Adjoint AI",
+    "Support et base de connaissances"
+  ]
+};
+/* ================================ */
+
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString("fr-CA").replace(/[  ]/g," ") + " $";
+let current = 0, included = true;
+
+$("picker").innerHTML = CONFIG.plans.map((p,i) => {
+  const dots = Array.from({length:4},(_,k)=>`<b class="${k<p.seats?'on':''}"></b>`).join("");
+  return `<button type="button" role="tab" id="tab-${p.id}" data-i="${i}" aria-selected="false" aria-controls="panel">
+    <span class="nm">${p.name}</span><span class="sub"><span class="dots" aria-hidden="true">${dots}</span>${p.seats} courtier${p.seats>1?'s':''}</span>
+  </button>`;
+}).join("");
+
+const check = '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="8" stroke-opacity=".15"/><path d="M5.5 9.3l2.3 2.2 4.7-4.8"/></svg>';
+$("feat").innerHTML = CONFIG.features.map(f=>`<li>${check}<span>${f}</span></li>`).join("");
+$("ai-credit").textContent = `${fmt(CONFIG.aiCredit)} de crédits offerts le premier mois`;
+
+function render(){
+  const p = CONFIG.plans[current];
+  const m = p.monthly + (included ? CONFIG.phoneBundle : 0);
+  $("p-name").textContent = p.name;
+  $("p-seats").textContent = `${p.seats} courtier${p.seats>1?'s':''}`;
+  $("p-monthly").innerHTML = `${fmt(m)}<small>/ mois</small>`;
+  $("p-note").textContent = included ? "Ligne téléphonique et SMS inclus" : "Ligne téléphonique facturée à l'usage";
+  $("p-setup").textContent = fmt(p.setup);
+  $("p-after").textContent = `${fmt(m)} / mois`;
+  $("cta").href = smsUri(p.name);
+  document.querySelectorAll("#picker button").forEach((b,i)=>{
+    b.setAttribute("aria-selected", i===current);
+    b.tabIndex = i===current ? 0 : -1;
+  });
+  $("btn-incl").setAttribute("aria-pressed", included);
+  $("btn-usage").setAttribute("aria-pressed", !included);
+  try { history.replaceState(null, "", "#" + p.id); } catch(e) {}
+}
+
+function select(i){ current = (i + CONFIG.plans.length) % CONFIG.plans.length; render(); }
+
+$("picker").addEventListener("click", e => { const b = e.target.closest("button"); if (b) select(+b.dataset.i); });
+$("picker").addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") { select(current+1); $("picker").children[current].focus(); }
+  if (e.key === "ArrowLeft")  { select(current-1); $("picker").children[current].focus(); }
+});
+document.addEventListener("keydown", e => {
+  if (!$("modal").hidden) { if (e.key === "Escape") closeModal(); return; }
+  if (e.target.closest("input,textarea")) return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= CONFIG.plans.length) select(n-1);
+});
+
+/* Bouton Réserver : sur cellulaire, ouvre Messages avec le texto déjà écrit.
+   Sur ordinateur, affiche un code QR à scanner avec le cellulaire. */
+function smsUri(plan){ return `sms:${CONFIG.smsNumber}?&body=${encodeURIComponent(CONFIG.smsMessage(plan))}`; }
+const isDesktop = () => window.matchMedia("(hover: hover) and (pointer: fine)").matches && window.innerWidth > 768;
+
+function openModal(){
+  const plan = CONFIG.plans[current].name;
+  const msg = CONFIG.smsMessage(plan);
+  const uri = smsUri(plan);
+  $("m-plan").textContent = plan;
+  $("m-msg").textContent = msg;
+  $("m-sms").href = uri;
+  const box = $("qr"); box.innerHTML = "";
+  if (window.QRCode) {
+    new QRCode(box, { text: uri, width: 400, height: 400, colorDark: "#0a0a0a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+  } else {
+    box.style.lineHeight = "1.4"; box.textContent = "Code QR indisponible. Textez le numéro ci-dessous.";
+  }
+  $("modal").hidden = false;
+  $("m-close").focus();
+}
+function closeModal(){ $("modal").hidden = true; $("cta").focus(); }
+$("cta").addEventListener("click", e => { if (isDesktop()) { e.preventDefault(); openModal(); } });
+$("m-close").addEventListener("click", closeModal);
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) closeModal(); });
+$("btn-incl").addEventListener("click", ()=>{ included = true; render(); });
+$("btn-usage").addEventListener("click", ()=>{ included = false; render(); });
+
+const start = CONFIG.plans.findIndex(p => "#" + p.id === location.hash);
+select(start >= 0 ? start : 0);
+</script>
+
+</body>
+</html>
