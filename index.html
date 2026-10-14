@@ -95,6 +95,26 @@ h1 span{display:block;color:var(--fg-2)}
 .go:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
 .go svg{width:16px;height:16px}
 
+/* Génération */
+.gen{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:rise .35s var(--ease)}
+.spin{width:36px;height:36px;border-radius:50%;border:2.5px solid var(--fg-12);border-top-color:var(--fg);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-title{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em}
+.gen-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;align-self:center;text-align:left}
+.gen-steps li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--fg-40);transition:color .25s}
+.gen-steps li .dotk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--fg-12);display:flex;align-items:center;justify-content:center;flex:none;transition:all .25s}
+.gen-steps li .dotk svg{width:11px;height:11px;opacity:0;transition:opacity .2s}
+.gen-steps li.on{color:var(--fg)}
+.gen-steps li.done{color:var(--fg-60)}
+.gen-steps li.done .dotk{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.gen-steps li.done .dotk svg{opacity:1}
+.bar-track{width:100%;max-width:320px;height:4px;border-radius:999px;background:var(--fg-12);overflow:hidden}
+.bar-fill{height:100%;width:0;background:var(--fg);border-radius:999px;transition:width .3s linear}
+.v.pop,.line.total strong.pop{animation:pop .5s var(--ease)}
+@keyframes pop{0%{transform:scale(.92);opacity:.4}60%{transform:scale(1.05);opacity:1}100%{transform:scale(1)}}
+.v,.line.total strong{display:inline-block;transform-origin:left center}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}.v.pop,.line.total strong.pop{animation:none}}
+
 /* Forfait détaillé */
 .quote{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:24px;scroll-margin-top:16px;
   animation:rise .45s var(--ease)}
@@ -218,6 +238,14 @@ footer{text-align:center;font-size:12px;color:var(--fg-40)}
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3.5 8.5L8 13l4.5-4.5"/></svg>
   </button>
 
+  <!-- Génération du forfait -->
+  <section class="gen" id="gen" hidden aria-live="polite">
+    <div class="spin" aria-hidden="true"></div>
+    <p class="gen-title">Préparation de votre forfait</p>
+    <ul class="gen-steps" id="gen-steps"></ul>
+    <div class="bar-track" aria-hidden="true"><div class="bar-fill" id="gen-fill"></div></div>
+  </section>
+
   <!-- Forfait détaillé -->
   <section class="quote" id="quote" hidden aria-labelledby="q-title">
     <div class="q-head">
@@ -295,9 +323,9 @@ const CONFIG = {
     // price = 1er courtier, extra = chaque courtier de plus. L'usage inclus se multiplie et est mis en commun.
     { id:"aucune",   name:"Pas pour l'instant", short:"sans Adjointe", price:0,  extra:0,  desc:"Vous pourrez l'ajouter plus tard." },
     { id:"adjointe", name:"Adjointe",     short:"Adjointe",     price:29, extra:24, reco:true, desc:"Pour l'usage courant",
-      usage:{ req:400, pa:20, hrs:2 } },
+      usage:{ req:400, hrs:2 } },
     { id:"pro",      name:"Adjointe Pro", short:"Adjointe Pro", price:49, extra:39, desc:"Pour l'utiliser toute la journée",
-      usage:{ req:1000, pa:50, hrs:6 } }
+      usage:{ req:1000, hrs:6 } }
   ],
   features: [
     "Portail client pour chaque transaction",
@@ -323,9 +351,9 @@ const state = { brokers: 1, tier: 1, lines: 1, shown: false };
 
 // Animation des montants
 const last = {};
-function tween(id, to, draw){
+function tween(id, to, draw, dur = 280){
   const from = last[id] ?? to; last[id] = to;
-  const el = $(id), t0 = performance.now(), dur = 280;
+  const el = $(id), t0 = performance.now();
   cancelAnimationFrame(el._raf);
   if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { draw(el, to); return; }
   const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
@@ -369,7 +397,6 @@ const aiPrice = (t, n) => t.price ? t.price + t.extra * (n - 1) : 0;
 const nf = v => v.toLocaleString("fr-CA").replace(/[\u202f\u00a0]/g," ");
 const perksFor = (t, n) => !t.usage ? [] : [
   `Environ ${nf(t.usage.req * n)} demandes par mois`,
-  `${nf(t.usage.pa * n)} analyses de promesses d'achat`,
   `${nf(t.usage.hrs * n)} h d'appels transcrits`
 ].concat(n > 1 ? ["Usage mis en commun pour toute l'équipe"] : []);
 $("opts").innerHTML = CONFIG.aiTiers.map((t,i) => `<button type="button" class="opt" role="radio" data-i="${i}" aria-checked="false">
@@ -410,7 +437,7 @@ function summary(){
   return `${plural(state.brokers,"courtier")}, ${t.short}, ${plural(state.lines,"numéro")}`;
 }
 
-function render(){
+function render(dur){
   const n = state.brokers, t = CONFIG.aiTiers[state.tier], L = state.lines;
   if (!dragging) { range.value = n; setFill(n); }
   range.setAttribute("aria-valuetext", plural(n,"courtier"));
@@ -426,25 +453,55 @@ function render(){
   const monthly = Math.round(plat + ai + num + use), setup = CONFIG.setupFor(n);
 
   $("l-plat-d").textContent = plural(n,"courtier");
-  tween("l-plat", plat, (el,v) => el.textContent = fmt(Math.round(v)));
+  tween("l-plat", plat, (el,v) => el.textContent = fmt(Math.round(v)), dur);
   $("l-ai-row").hidden = ai === 0;
   $("l-ai-n").innerHTML = n > 1 && ai ? `${t.name}<em>${fmt(t.price)} + ${n - 1} × ${fmt(t.extra)}, usage en commun</em>` : t.name;
-  tween("l-ai", ai, (el,v) => el.textContent = fmt(Math.round(v)));
+  tween("l-ai", ai, (el,v) => el.textContent = fmt(Math.round(v)), dur);
   $("l-num-d").textContent = `${L} × ${fmt(CONFIG.phoneNumber)}`;
-  tween("l-num", num, (el,v) => el.textContent = fmt(r2(v)));
-  tween("l-use", use, (el,v) => el.textContent = "≈ " + fmt(Math.round(v)));
-  tween("l-total", monthly, (el,v) => el.textContent = `≈ ${fmt(Math.round(v))} / mois`);
-  tween("s-month", monthly, (el,v) => el.innerHTML = `≈ ${fmt(Math.round(v))}<small>/ mois</small>`);
-  tween("s-setup", setup, (el,v) => el.textContent = fmt(Math.round(v)));
+  tween("l-num", num, (el,v) => el.textContent = fmt(r2(v)), dur);
+  tween("l-use", use, (el,v) => el.textContent = "≈ " + fmt(Math.round(v)), dur);
+  tween("l-total", monthly, (el,v) => el.textContent = `≈ ${fmt(Math.round(v))} / mois`, dur);
+  tween("s-month", monthly, (el,v) => el.innerHTML = `≈ ${fmt(Math.round(v))}<small>/ mois</small>`, dur);
+  tween("s-setup", setup, (el,v) => el.textContent = fmt(Math.round(v)), dur);
   $("q-sum").textContent = summary();
   $("cta").href = smsUri();
   try { history.replaceState(null, "", `#${n}-${t.id}-${L}`); } catch(e) {}
 }
 
+const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+let generating = false;
 $("go").addEventListener("click", () => {
   const q = $("quote");
-  if (q.hidden) { q.hidden = false; state.shown = true; $("go").firstChild.textContent = "Voir mon forfait à jour "; }
-  q.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  if (!q.hidden) { q.scrollIntoView({ behavior: smooth(), block: "start" }); return; }
+  if (generating) return;
+  generating = true;
+  const t = CONFIG.aiTiers[state.tier];
+  const steps = [
+    `Plateforme pour ${plural(state.brokers, "courtier")}`,
+    t.price ? `${t.name}${state.brokers > 1 ? " pour l'équipe" : ""}` : "Sans Adjointe AI",
+    `${plural(state.lines, "numéro")} de téléphone`,
+    "Calcul de vos prix"
+  ];
+  $("gen-steps").innerHTML = steps.map(x => `<li><span class="dotk">${tick}</span>${x}</li>`).join("");
+  const items = $("gen-steps").children, gen = $("gen"), fill = $("gen-fill");
+  fill.style.width = "0";
+  $("go").hidden = true; gen.hidden = false;
+  gen.scrollIntoView({ behavior: smooth(), block: "center" });
+  const total = 2400, per = total / steps.length;
+  steps.forEach((_, i) => {
+    setTimeout(() => { items[i].classList.add("on"); fill.style.width = ((i + 1) / steps.length * 100) + "%"; }, i * per);
+    setTimeout(() => { items[i].classList.replace("on", "done"); }, (i + 1) * per - 120);
+  });
+  setTimeout(() => {
+    gen.hidden = true; q.hidden = false; state.shown = true; generating = false;
+    $("go").hidden = false; $("go").firstChild.textContent = "Voir mon forfait à jour ";
+    // Les prix partent de zéro et montent jusqu'au total
+    ["l-plat","l-ai","l-num","l-use","l-total","s-month","s-setup"].forEach(id => { last[id] = 0; });
+    render(900);
+    ["s-month","s-setup"].forEach(id => { const el = $(id); el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); });
+    const tot = $("l-total"); tot.classList.remove("pop"); void tot.offsetWidth; tot.classList.add("pop");
+    q.scrollIntoView({ behavior: smooth(), block: "start" });
+  }, total + 150);
 });
 
 /* Réserver : sur cellulaire, ouvre Messages avec le texto déjà écrit. Sur ordinateur, code QR. */
